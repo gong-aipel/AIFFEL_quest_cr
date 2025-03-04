@@ -1,0 +1,94 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false, // 디버그 배너 제거
+      home: const MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  bool showContainers = false; // 처음에는 네모 박스를 숨김
+
+  List<Widget> createBoxes(int numBoxes) {
+    List<Widget> boxList = [];
+    List<Color> colors = [
+      Colors.red,
+      Colors.orange,
+      Colors.yellow,
+      Colors.green,
+      Colors.blue,
+    ];
+
+    for (int i = 0; i < numBoxes; i++) {
+      double size = 300 - (i * 60); // 300 → 240 → 180 → 120 → 60
+      double position = i * 20.0; // 왼쪽 위로 이동하면서 겹치게 만들기
+
+      boxList.add(Positioned(
+        left: position,
+        top: position,
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: colors[i], // 각 네모마다 색 다르게 지정
+            border: Border.all(color: Colors.black, width: 2),
+          ),
+        ),
+      ));
+    }
+    return boxList;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('플러터 앱 만들기'), // AppBar 중앙 텍스트
+        backgroundColor: Colors.blue, // AppBar 색상
+        leading: const Icon(Icons.menu), // AppBar 왼쪽 아이콘 추가
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                showContainers = true; // 버튼을 누르면 네모 박스가 나타남
+              });
+              print('버튼이 눌렸습니다'); // 버튼 클릭 시 DEBUG 콘솔 출력
+            },
+            child: const Text('Text'), // 버튼 안의 텍스트
+          ),
+          const SizedBox(height: 50), // 버튼과 네모 박스 사이 간격
+          if (showContainers) // 버튼을 눌러야 네모 박스가 나타남
+            Center(
+              child: SizedBox(
+                width: 320, // 약간 여유 공간 추가
+                height: 320,
+                child: Stack(
+                  children: createBoxes(5), // 네모 5개 생성하여 추가
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
