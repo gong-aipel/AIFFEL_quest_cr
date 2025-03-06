@@ -1,0 +1,109 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: FirstPage(isCat: true), // 첫 시작은 isCat = true (고양이)
+    );
+  }
+}
+
+class FirstPage extends StatelessWidget {
+  final bool isCat; // true면 고양이, false면 강아지
+
+  FirstPage({required this.isCat});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('First Page'),
+        leading: Icon(Icons.pets), // 고양이 아이콘 추가
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ElevatedButton(
+            onPressed: () {
+              // 현재 isCat 값을 SecondPage로 전달
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SecondPage(isCat: isCat),
+                ),
+              );
+            },
+            child: Text('Next'),
+          ),
+          GestureDetector(
+            onTap: () {
+              print('FirstPage - isCat: $isCat'); // 현재 값 출력
+            },
+            child: Image.network(
+              isCat
+                  ? 'https://images.pexels.com/photos/774731/pexels-photo-774731.jpeg?auto=compress&cs=tinysrgb&h=300&w=300'
+                  : 'https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&h=300&w=300',
+              width: 300,
+              height: 300,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class SecondPage extends StatelessWidget {
+  final bool isCat; // true면 고양이, false면 강아지
+
+  SecondPage({required this.isCat});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Second Page'),
+        leading: Icon(Icons.pets), // 강아지 아이콘 추가
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ElevatedButton(
+            onPressed: () {
+              // isCat 값을 반전하고, 기존 스택을 제거하면서 첫 번째 페이지로 돌아감
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FirstPage(isCat: !isCat), // true ↔ false 변경
+                ),
+                (route) => false, // 기존 모든 Stack 제거
+              );
+            },
+            child: Text('Back (Stack 제거)'),
+          ),
+          GestureDetector(
+            onTap: () {
+              print('SecondPage - isCat: $isCat'); // 현재 값 출력
+            },
+            child: Image.network(
+              isCat
+                  ? 'https://images.pexels.com/photos/774731/pexels-photo-774731.jpeg?auto=compress&cs=tinysrgb&h=300&w=300'
+                  : 'https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&h=300&w=300',
+              width: 300,
+              height: 300,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+회고: Navigator 화면에서 가고 돌아오는 과정을 1차 전달, 2차 stck 제거 하면서 돌아와야 되는데 결과 값이 고양이:true 강아지: false 가 안나오고 계속 true, true 가 나오거나 false, false 가 나와서 그 오류를 잡으려고 5-6번 수정했다. 자꾸 수정을 하다보니 조금 더 코드가 보이는 것 같다. 
