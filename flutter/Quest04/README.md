@@ -44,6 +44,129 @@
 구현 결과물
  ![0307플러터 작업 결과물](https://github.com/user-attachments/assets/237ace73-e1e2-4e57-a313-4d850e7d69aa)
 
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  List<Map<String, dynamic>> cart = [];
+  int _selectedIndex = 0;
+
+  void addToCart(Map<String, dynamic> coffee) {
+    setState(() {
+      cart.add(coffee);
+    });
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    List<Widget> pages = [
+      HomeScreen(cart: cart, addToCart: addToCart),
+      CartScreen(cart: cart),
+    ];
+
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        body: pages[_selectedIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(Icons.local_cafe),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.shopping_cart),
+              label: 'Cart',
+            ),
+          ],
+          currentIndex: _selectedIndex,
+          selectedItemColor: Colors.brown,
+          onTap: _onItemTapped,
+        ),
+      ),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  final List<Map<String, dynamic>> cart;
+  final Function(Map<String, dynamic>) addToCart;
+
+  HomeScreen({required this.cart, required this.addToCart});
+
+  final List<Map<String, dynamic>> coffeeList = [
+    {'name': 'Macchiato Classic', 'price': 45.13},
+    {'name': 'Macchiato with Chocolate', 'price': 64.53},
+    {'name': 'Macchiato with Strawberry', 'price': 75.50},
+    {'name': 'Macchiato with Blueberry', 'price': 75.50},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Kopi Kap'),
+        backgroundColor: Colors.brown,
+      ),
+      body: ListView.builder(
+        itemCount: coffeeList.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(coffeeList[index]['name']),
+            subtitle: Text('₱${coffeeList[index]['price']}'),
+            trailing: ElevatedButton(
+              onPressed: () {
+                addToCart(coffeeList[index]); // MyAppState의 setState() 호출됨
+              },
+              child: Text('Add'),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class CartScreen extends StatelessWidget {
+  final List<Map<String, dynamic>> cart;
+
+  CartScreen({required this.cart});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Cart'),
+        backgroundColor: Colors.brown,
+      ),
+      body: cart.isEmpty
+          ? Center(child: Text('Your cart is empty'))
+          : ListView.builder(
+              itemCount: cart.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(cart[index]['name']),
+                  subtitle: Text('₱${cart[index]['price']}'),
+                );
+              },
+            ),
+    );
+  }
+}
 
 # 회고
 
