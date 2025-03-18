@@ -1,0 +1,218 @@
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:camera/camera.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: '시니어 식당',
+      theme: ThemeData(primarySwatch: Colors.green),
+      home: HomePage(),
+    );
+  }
+}
+
+// 메인 페이지
+class HomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('시니어 식당')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => MenuPage()),
+                );
+              },
+              child: Text('메뉴 보기'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CameraPage()),
+                );
+              },
+              child: Text('카메라 열기'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// 메뉴 페이지
+class MenuPage extends StatelessWidget {
+  final List<Map<String, dynamic>> menuItems = [
+    {'name': '된장찌개', 'price': 8000},
+    {'name': '갈비탕', 'price': 10000},
+    {'name': '생선구이', 'price': 9000},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('메뉴 선택')),
+      body: ListView.builder(
+        itemCount: menuItems.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(menuItems[index]['name']),
+            subtitle: Text('${menuItems[index]['price']}원'),
+            trailing: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => OrderPage(menuItems[index]),
+                  ),
+                );
+              },
+              child: Text('주문'),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// 주문 페이지
+class OrderPage extends StatefulWidget {
+  final Map<String, dynamic> selectedMenu;
+  OrderPage(this.selectedMenu);
+
+  @override
+  _OrderPageState createState() => _OrderPageState();
+}
+
+class _OrderPageState extends State<OrderPage> {
+  int quantity = 1;
+  String orderType = "예약";
+
+  Future<void> saveOrder() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('lastOrder', widget.selectedMenu['name']);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('주문하기')),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('메뉴: ${widget.selectedMenu['name']}', style: TextStyle(fontSize: 20)),
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Text('수량: '),
+                IconButton(
+                  icon: Icon(Icons.remove),
+                  onPressed: () {
+                    setState(() {
+                      if (quantity > 1) quantity--;
+                    });
+                  },
+                ),
+                Text('$quantity'),
+                IconButton(
+                  icon: Icon(Icons.add),
+                  onPressed: () {
+                    setState(() {
+                      quantity++;
+                    });
+                  },
+                ),
+              ],
+            ),
+            SizedBox(height: 10),
+            Text('방식:', style: TextStyle(fontSize: 18)),
+            Row(
+              children: [
+                Radio(
+                  value: "예약",
+                  groupValue: orderType,
+                  onChanged: (value) {
+                    setState(() {
+                      orderType = value.toString();
+                    });
+                  },
+                ),
+                Text("예약"),
+                Radio(
+                  value: "배달",
+                  groupValue: orderType,
+                  onChanged: (value) {
+                    setState(() {
+                      orderType = value.toString();
+                    });
+                  },
+                ),
+                Text("배달"),
+              ],
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                saveOrder();
+                Navigator.pop(context);
+              },
+              child: Text('주문 완료'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// 카메라 페이지 추가
+class CameraPage extends StatefulWidget {
+  @override
+  _CameraPageState createState() => _CameraPageState();
+}
+
+class _CameraPageState extends State<CameraPage> {
+  CameraController? _controller;
+  List<CameraDescription>? cameras;
+
+  @override
+  void initState() {
+    super.initState();
+    availableCameras().then((value) {
+      cameras = value;
+      _controller = CameraController(cameras![0], ResolutionPreset.medium);
+      _controller!.initialize().then((_) {
+        if (!mounted) return;
+        setState(() {});
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_controller == null || !_controller!.value.isInitialized) {
+      return Center(child: CircularProgressIndicator());
+    }
+    return Scaffold(
+      appBar: AppBar(title: Text('카메라')),
+      body: CameraPreview(_controller!),
+    );
+  }
+}
